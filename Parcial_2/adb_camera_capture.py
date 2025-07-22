@@ -9,6 +9,11 @@ Requisitos previos
 * Depuración USB activada y ADB funcionando (`adb devices` muestra el device).
 * Permisos de *Almacenamiento* y *Cámara* otorgados a Termux y activados los
   "Otros permisos" en MIUI (ventanas emergentes e inicio en segundo plano).
+  
+  printf "allow-external-apps=true\n" > ~/.termux/termux.properties
+  printf "allow-external-apps=true\n" > ~/.termux/termux.properties
+  
+  
 """
 
 import argparse
