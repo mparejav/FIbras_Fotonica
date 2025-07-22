@@ -5,7 +5,7 @@ from masks import *  # Importa las funciones de generación de máscaras
 
 # Parámetros de la simulación
 λ = 0.5 # um. Longitud de onda de la luz
-D_prima = 0.5e6  # um. Distancia desde la abertura al plano
+D_prima = 1e6  # um. Distancia desde la abertura al plano
 
 # Funcion que simula la difracción de Fraunhofer generada por una apertura dada.
 # Aplica la transformada de Fourier bidimensional a la máscara y calcula la intensidad del patrón resultante.
@@ -49,30 +49,34 @@ def graph(mask, Intensity):
     fy = np.fft.fftshift(np.fft.fftfreq(size, d=dx))
     
     # Coordenadas físicas en la pantalla de observación (en um)
-    X_screen = λ * D_prima * fx
-    Y_screen = λ * D_prima * fy
+    X_screen = (λ * D_prima * fx) * 1000 # Convertir a mm
+    Y_screen = (λ * D_prima * fy) * 1000 # Convertir a mm
     extent_screen = [X_screen.min(), X_screen.max(), Y_screen.min(), Y_screen.max()]
 
     # Porcentaje del espectro a mostrar (por ejemplo, 10%)
-    crop = 0.1
+    crop = 0.2
     N = int(size * crop / 2)
 
     # Índices para recortar
     ix_start = size//2 - N
     ix_end   = size//2 + N
 
+    # Índices para recortar en y (para los slits horizontal y vertical)
+    iy_start = size//2 - N
+    iy_end   = size//2 + N
+
     # Recorta intensidad y ejes
     Intensity_crop = Intensity[ix_start:ix_end, ix_start:ix_end]
     X_screen_crop = X_screen[ix_start:ix_end]
-    Y_screen_crop = Y_screen[ix_start:ix_end]
+    Y_screen_crop = Y_screen[iy_start:iy_end] # multiplicar por 5 para slits
     extent_screen_crop = [X_screen_crop.min(), X_screen_crop.max(), Y_screen_crop.min(), Y_screen_crop.max()]
 
     # Mostrar el patrón de difracción (logaritmo para mejorar el contraste visual)
     plt.subplot(1, 2, 2)
     plt.title('Screen')
     plt.imshow(np.log10(Intensity_crop + 1e-5), cmap='inferno', extent=extent_screen_crop)
-    plt.xlabel("$x'$ [$\mu$m]")
-    plt.ylabel("$y'$ [$\mu$m]")
+    plt.xlabel("$x'$ [mm]")
+    plt.ylabel("$y'$ [mm]")
     plt.axis('on')
 
     plt.show()
@@ -91,10 +95,10 @@ def simulate_and_graph(shape='circle', **kwargs):
 
     - **kwargs : keyword arguments : diccionario
         Argumentos específicos para cada tipo de figura. Ejemplos:
-        radius_mm = 1.0                     → para círculos
-        vertical_slit_width_mm = 1.0        → para rendijas verticales
-        horizontal_slit_width_mm = 1.0      → para rendijas horizontales
-        width_mm = 1.5, height_mm = 2.0     → para rectángulos
+        radius_um = 50                      → para círculos
+        vertical_slit_width_um = 1.0        → para rendijas verticales
+        horizontal_slit_width_um = 1.0      → para rendijas horizontales
+        width_um = 200, height_um = 100     → para rectángulos
         image_path = 'ruta.jpg'             → para cargar imagen
 
     El uso de **kwargs permite que esta función acepte distintos argumentos
@@ -111,13 +115,13 @@ def simulate_and_graph(shape='circle', **kwargs):
         mask = circle(kwargs['radius_um'])
 
     elif shape == 'rectangle':
-        mask = rectangle(kwargs['width_mm'], kwargs['height_mm'])
+        mask = rectangle(kwargs['width_um'], kwargs['height_um'])
 
     elif shape == 'vertical_slit':
-        mask = vertical_slit(kwargs['vertical_slit_width_mm'])
+        mask = vertical_slit(kwargs['vertical_slit_width_um'])
 
     elif shape == 'horizontal_slit':
-        mask = horizontal_slit(kwargs['horizontal_slit_width_mm'])
+        mask = horizontal_slit(kwargs['horizontal_slit_width_um'])
 
     elif shape == 'image':
         mask = load_image(kwargs['image_path'])
@@ -138,15 +142,14 @@ def simulate_and_graph(shape='circle', **kwargs):
     # Mostrar la apertura y su patrón de difracción
     graph(mask, Intensity = Fraunhofer_Diffraction(mask))
 
-    
-simulate_and_graph(shape = 'circle', radius_um = 50.0)  
+#simulate_and_graph(shape = 'circle', radius_um = 50.0)
 
-#simulate_and_graph(shape='rectangle', width_mm=2.0, height_mm=1.0)  # Ejemplo de uso con rectángulo
+#simulate_and_graph(shape='rectangle', width_um = 200, height_um = 100)  # Ejemplo de uso con rectángulo
 
-#simulate_and_graph(shape='vertical_slit', vertical_slit_width_mm=0.5)  # Ejemplo de uso con rendija vertical
+#simulate_and_graph(shape='vertical_slit', vertical_slit_width_um = 100)  # Ejemplo de uso con rendija vertical
 
-#simulate_and_graph(shape='horizontal_slit', horizontal_slit_width_mm=0.5)  # Ejemplo de uso con rendija horizontal
+#simulate_and_graph(shape='horizontal_slit', horizontal_slit_width_um = 100)  # Ejemplo de uso con rendija horizontal
 
-#simulate_and_graph(shape='image', image_path='/home/manuel/Documents/GitHub/FIbras_Fotonica/Parcial_4/Images/CirculoCuadrado.png')  # Ejemplo de uso con imagen
+#simulate_and_graph(shape='image', image_path='/home/manuel/Documents/GitHub/FIbras_Fotonica/Parcial_4/Images/PatronCircular.jpg')  # Ejemplo de uso con imagen
 
-#simulate_and_graph(shape = 'cross_mask', L1 = 4.0, L2 = 4.0, h1 = 2, h2 = 2, t = 0.5, e = 0.5)  # Ejemplo de uso con cruz
+#simulate_and_graph(shape = 'cross_mask', L1 = 0, L2 = 0, h1 = 400, h2 = 400, t = 100, e = 100)  # Ejemplo de uso con cruz

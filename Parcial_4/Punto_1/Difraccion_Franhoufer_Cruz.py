@@ -159,7 +159,7 @@ log_intensity = np.log(Intensity_Function + 1e-6)
 patron = ax[1].imshow(
     log_intensity,
     extent=extent,
-    cmap=color_map,
+    cmap='color_map', #gray #inferno
     vmin=log_intensity.min()  # El fondo será negro
 )
 ax[1].set_facecolor("#000000")
