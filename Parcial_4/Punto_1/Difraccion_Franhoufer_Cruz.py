@@ -12,9 +12,26 @@ import matplotlib.pyplot as plt
 # Parametros del sistema 
 n = 1                       # Indice de refracción del medio. Aire por defecto.
 window_size = 1500                 # Tamaño de la malla cuadrada (número de puntos en cada eje).
-λ_0 = 0.5 #um               # Longitud de onda de la fuente de luz
+λ_0 = 0.480 #um               # Longitud de onda de la fuente de luz
 λ = λ_0/n #um               # Lambda efectiva
 k_0 = 2 * np.pi / λ #um^-1  # Número de onda en el medio
+
+# Diccionario de colormaps para el espectro visible
+colormap_ranges = [
+    ((400, 450), 'Purples'),   # Violeta
+    ((450, 495), 'Blues'),     # Azul
+    ((495, 570), 'Greens'),    # Verde
+    ((570, 590), 'Oranges'),   # Amarillo/Naranja
+    ((590, 620), 'Oranges'),   # Naranja
+    ((620, 700), 'Reds'),      # Rojo
+]
+
+# Función para seleccionar el colormap según λ_0
+def get_colormap(lambda_0):
+    for (low, high), cmap in colormap_ranges:
+        if low < lambda_0 <= high:
+            return cmap + '_r'
+    return 'gray_r'  # Default si está fuera del visible
 
 # Dimensiones de la abertura
 e = 200  #um              # Ancho de la abertura horizontal
@@ -41,8 +58,10 @@ Esta condición en simulaciones de este tipo no es tan crítica.
 # Encuentra la longitud máxima de la abertura (en um)
 max_dim = np.max(P)
 
+min_D_prima = (n * max_dim**2) / (2 * λ)  # D_prima mínima para cumplir la condición de Fraunhofer
+
 # Condicion de Fraunhofer
-D_prima = float(input(f"D_prima > {(n * max_dim**2)/(2*λ)} [um]:  "))   
+D_prima = float(input(f"D_prima > {min_D_prima:.0f} [um]:  "))   
 
 # Posiciones de los centros de los rectángulos 
 # Rectangulo 1 (horizontal):
@@ -101,6 +120,8 @@ Intensity_Function = 1/(λ**2 * D_prima**2) * np.abs(FT_1 + FT_2 + FT_3)**2
 # Intensidad normalizada
 Intensity_Function = Intensity_Function / np.max(Intensity_Function)
 
+color_map = get_colormap(λ_0 * 1000)  # Selecciona el colormap según λ_0 en nm
+
 # Grafica de la mascara
 fig, ax = plt.subplots(1, 2, figsize = (12, 6))
 
@@ -134,7 +155,14 @@ extent = [theta_x.min()*D_prima, theta_x.max()*D_prima, theta_y.min()*D_prima, t
 
 # Definir grafica que contiene patron de difraccion
 # Se toma el logaritmo de la función de intensidad para mejorar la visualización.
-patron = ax[1].imshow(np.log(Intensity_Function + 1e-6), extent=extent, cmap="inferno") 
+log_intensity = np.log(Intensity_Function + 1e-6)
+patron = ax[1].imshow(
+    log_intensity,
+    extent=extent,
+    cmap=color_map,
+    vmin=log_intensity.min()  # El fondo será negro
+)
+ax[1].set_facecolor("#000000")
 ax[1].set_title("Screen")
 ax[1].set_xlabel("x' [um]")
 ax[1].set_ylabel("y' [um]")
