@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 
 # Variables globales 
-size = 1500    # Número de píxeles de un lado de la ventana (cada pixel = 1 um)
+size = 2048    # Número de píxeles de un lado de la ventana (cada pixel = 1 um)
 
 ### Funciones para la creación de aberturas convencionales ###
 

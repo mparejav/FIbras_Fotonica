@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 
 # Parametros del sistema 
 n = 1                       # Indice de refracción del medio. Aire por defecto.
-window_size = 1500                 # Tamaño de la malla cuadrada (número de puntos en cada eje).
-λ_0 = 0.480 #um               # Longitud de onda de la fuente de luz
+window_size = 1500          # Tamaño de la malla cuadrada (número de puntos en cada eje).
+λ_0 = 0.480 #um             # Longitud de onda de la fuente de luz
 λ = λ_0/n #um               # Lambda efectiva
 k_0 = 2 * np.pi / λ #um^-1  # Número de onda en el medio
 
@@ -38,8 +38,8 @@ e = 200  #um              # Ancho de la abertura horizontal
 t = 200  #um              # Ancho de las aberturas verticales
 L1 = 1000  #um            # Longitud de la abertura horizontal
 L2 = 1000  #um            # Longitud de las aberturas verticales
-h1 = 800  #um             # Altura de la abertura vertical superior
-h2 = 800 #um              # Altura de la abertura vertical inferior
+h1 = 50  #um             # Altura de la abertura vertical superior
+h2 = 50 #um              # Altura de la abertura vertical inferior
 
 # Longitudes totales de la abertura
 L = L1 + L2 + t # Longitud total horizontal
@@ -61,7 +61,9 @@ max_dim = np.max(P)
 min_D_prima = (n * max_dim**2) / (2 * λ)  # D_prima mínima para cumplir la condición de Fraunhofer
 
 # Condicion de Fraunhofer
-D_prima = float(input(f"D_prima > {min_D_prima:.0f} [um]:  "))   
+#D_prima = float(input(f"D_prima > {min_D_prima:.0f} [um]:  "))   
+D_prima = 1e6  #um, distancia entre el plano de abertura y el plano de visualización
+
 
 # Posiciones de los centros de los rectángulos 
 # Rectangulo 1 (horizontal):
@@ -159,7 +161,7 @@ log_intensity = np.log(Intensity_Function + 1e-6)
 patron = ax[1].imshow(
     log_intensity,
     extent=extent,
-    cmap='color_map', #gray #inferno
+    cmap = 'inferno',  #gray #inferno#color_map
     vmin=log_intensity.min()  # El fondo será negro
 )
 ax[1].set_facecolor("#000000")

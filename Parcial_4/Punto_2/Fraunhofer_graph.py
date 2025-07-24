@@ -54,7 +54,7 @@ def graph(mask, Intensity):
     extent_screen = [X_screen.min(), X_screen.max(), Y_screen.min(), Y_screen.max()]
 
     # Porcentaje del espectro a mostrar (por ejemplo, 10%)
-    crop = 0.2
+    crop = 0.1
     N = int(size * crop / 2)
 
     # Índices para recortar
