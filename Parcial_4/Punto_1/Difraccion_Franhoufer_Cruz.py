@@ -15,8 +15,10 @@ window_size = 1500          # Tamaño de la malla cuadrada (número de puntos en
 λ_0 = 0.480 #um             # Longitud de onda de la fuente de luz
 λ = λ_0/n #um               # Lambda efectiva
 k_0 = 2 * np.pi / λ #um^-1  # Número de onda en el medio
+D_prima = 1e6  #um, distancia entre el plano de abertura y el plano de visualización
 
 # Diccionario de colormaps para el espectro visible
+' La idea es que el patrón de difracción tenga el color de la longitud de onda con la que se trabaja'
 colormap_ranges = [
     ((400, 450), 'Purples'),   # Violeta
     ((450, 495), 'Blues'),     # Azul
@@ -30,16 +32,17 @@ colormap_ranges = [
 def get_colormap(lambda_0):
     for (low, high), cmap in colormap_ranges:
         if low < lambda_0 <= high:
-            return cmap + '_r'
+            return cmap + '_r' # Ajuste para que colormpap se invierta y empiece en oscuro
     return 'gray_r'  # Default si está fuera del visible
 
+# La cruz se dividió en 3 rectangulos cuyos campos se calcularon independientemente y luego se consideraron sus constribuciones en conjunto 
 # Dimensiones de la abertura
 e = 200  #um              # Ancho de la abertura horizontal
 t = 200  #um              # Ancho de las aberturas verticales
 L1 = 1000  #um            # Longitud de la abertura horizontal
 L2 = 1000  #um            # Longitud de las aberturas verticales
-h1 = 50  #um             # Altura de la abertura vertical superior
-h2 = 50 #um              # Altura de la abertura vertical inferior
+h1 = 800  #um             # Altura de la abertura vertical superior
+h2 = 800 #um              # Altura de la abertura vertical inferior
 
 # Longitudes totales de la abertura
 L = L1 + L2 + t # Longitud total horizontal
@@ -54,16 +57,13 @@ Se determina la máxima longitud de la abertura para calcular la distancia míni
 que cumpla la condición de Fraunhofer.
 Esta condición en simulaciones de este tipo no es tan crítica.
 '''
-
 # Encuentra la longitud máxima de la abertura (en um)
 max_dim = np.max(P)
 
 min_D_prima = (n * max_dim**2) / (2 * λ)  # D_prima mínima para cumplir la condición de Fraunhofer
 
-# Condicion de Fraunhofer
-#D_prima = float(input(f"D_prima > {min_D_prima:.0f} [um]:  "))   
-D_prima = 1e6  #um, distancia entre el plano de abertura y el plano de visualización
-
+# Se establece la condición de Fraunhofer. Se solicita al usuario que de un valor que cumpla dadas las dimensiones del problema.
+D_prima = float(input(f"D_prima > {min_D_prima:.0f} [um]:  "))   
 
 # Posiciones de los centros de los rectángulos 
 # Rectangulo 1 (horizontal):
@@ -119,7 +119,7 @@ FT_3 = t * h2 * sinc_β_x2 * sinc_β_y2 * np.exp(-1j * (2 * np.pi / λ) * (x_2 *
 # Funcion de intensidad en la pantalla
 Intensity_Function = 1/(λ**2 * D_prima**2) * np.abs(FT_1 + FT_2 + FT_3)**2
 
-# Intensidad normalizada
+# Se normaliza la intensidad 
 Intensity_Function = Intensity_Function / np.max(Intensity_Function)
 
 color_map = get_colormap(λ_0 * 1000)  # Selecciona el colormap según λ_0 en nm
@@ -140,6 +140,7 @@ rect2 = plt.Rectangle((x_1 - t/2, y_1 - h1/2), t, h1, color="white")
 # Rectángulo vertical inferior (centro en x_2, y_2)
 rect3 = plt.Rectangle((x_2 - t/2, y_2 - h2/2), t, h2, color="white")
 
+# Se añaden los rectángulos a la gráfica uno a uno
 ax[0].add_patch(rect1)
 ax[0].add_patch(rect2)
 ax[0].add_patch(rect3)
@@ -150,19 +151,19 @@ ax[0].set_ylabel(r"$\tilde{y}$ [um]")
 # Grafica del patrón de difracción
 '''
 Se define el rango de coordenadas espaciales en el plano de la pantalla. Se pasa de coordenadas angulares a coordenadas espaciales,
-usando aproximación de ángulos pequeños para la tangente.
+usando aproximación de ángulos pequeños para el seno.
 Esto permite visualizar el patrón de difracción en términos de posiciones físicas en la pantalla. 
 '''
 extent = [theta_x.min()*D_prima, theta_x.max()*D_prima, theta_y.min()*D_prima, theta_y.max()*D_prima]
 
 # Definir grafica que contiene patron de difraccion
 # Se toma el logaritmo de la función de intensidad para mejorar la visualización.
-log_intensity = np.log(Intensity_Function + 1e-6)
+log_intensity = np.log(Intensity_Function + 1e-6) # se puede variar 1e-6 para mejor modificar el contraste
 patron = ax[1].imshow(
     log_intensity,
-    extent=extent,
+    extent = extent,
     cmap = 'inferno',  #gray #inferno#color_map
-    vmin=log_intensity.min()  # El fondo será negro
+    vmin = log_intensity.min()  # El fondo será negro
 )
 ax[1].set_facecolor("#000000")
 ax[1].set_title("Screen")
