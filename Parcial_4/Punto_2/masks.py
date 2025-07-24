@@ -4,6 +4,7 @@ from PIL import Image
 
 # Variables globales 
 size = 2048    # Número de píxeles de un lado de la ventana (cada pixel = 1 um)
+physical_size_um = 2000  # Tamaño físico de la ventana en micras (um)
 
 ### Funciones para la creación de aberturas convencionales ###
 
@@ -16,16 +17,16 @@ Las dimensiones se especifican directamente en micras (um).
 # Función que genera una abertura circular centrada.
 def circle(radius_um):
     # Genera coordenadas físicas centradas en 0
-    x = np.arange(-size//2, size//2)
-    y = np.arange(-size//2, size//2)
+    x = np.linspace(-physical_size_um/2, physical_size_um/2, size)
+    y = np.linspace(-physical_size_um/2, physical_size_um/2, size)
     X, Y = np.meshgrid(x, y)
     mask = np.where(X**2 + Y**2 <= radius_um**2, 1, 0)
     return mask
 
 # Función que genera una abertura rectangular centrada.
 def rectangle(width_um, height_um):
-    x = np.arange(-size//2, size//2)
-    y = np.arange(-size//2, size//2)
+    x = np.linspace(-physical_size_um/2, physical_size_um/2, size)
+    y = np.linspace(-physical_size_um/2, physical_size_um/2, size)
     X, Y = np.meshgrid(x, y)
     mask = np.where(
         (np.abs(X) <= width_um // 2) & (np.abs(Y) <= height_um // 2),
@@ -35,16 +36,16 @@ def rectangle(width_um, height_um):
 
 # Función que genera una rendija vertical centrada.
 def vertical_slit(width_um):
-    x = np.arange(-size//2, size//2)
-    y = np.arange(-size//2, size//2)
+    x = np.linspace(-physical_size_um/2, physical_size_um/2, size)
+    y = np.linspace(-physical_size_um/2, physical_size_um/2, size)
     X, Y = np.meshgrid(x, y)
     mask = np.where(np.abs(X) <= width_um // 2, 1, 0)
     return mask
 
 # Función que genera una rendija horizontal centrada.
 def horizontal_slit(width_um):
-    x = np.arange(-size//2, size//2)
-    y = np.arange(-size//2, size//2)
+    x = np.linspace(-physical_size_um/2, physical_size_um/2, size)
+    y = np.linspace(-physical_size_um/2, physical_size_um/2, size)
     X, Y = np.meshgrid(x, y)
     mask = np.where(np.abs(Y) <= width_um // 2, 1, 0)
     return mask
@@ -63,23 +64,28 @@ def load_image(image_path):
 # La cruz se forma a partir de dos rectángulos: uno horizontal (con grosor 'e_um') y uno vertical (con grosor 't_um').
 # Las dimensiones están definidas en micras (um).
 def cross_mask(L1_um, L2_um, h1_um, h2_um, t_um, e_um):
+    
+    x = np.linspace(-physical_size_um/2, physical_size_um/2, size)
+    y = np.linspace(-physical_size_um/2, physical_size_um/2, size)
+    X, Y = np.meshgrid(x, y)
     mask = np.zeros((size, size))
-    center = size // 2
+    
+    # Brazo horizontal
+    cond_h = (np.abs(Y) <= e_um/2) & (X >= -L1_um - t_um/2) & (X <= L2_um + t_um/2)
+    mask[cond_h] = 1
 
-    # Brazo horizontal: largo total (L1 + t + L2), grosor e_um
-    x_start = center - L1_um - t_um // 2
-    x_end   = center + L2_um + t_um // 2
-    y_start = center - e_um // 2
-    y_end   = center + e_um // 2
-    mask[y_start:y_end, x_start:x_end] = 1
+    # Brazo vertical
+    cond_v = (np.abs(X) <= t_um/2) & (Y >= -h2_um - e_um/2) & (Y <= h1_um + e_um/2)
+    mask[cond_v] = 1
 
-    # Brazo vertical: largo total (h1 + h2 + e), grosor t_um
-    x_start_v = center - t_um // 2
-    x_end_v   = center + t_um // 2
-    y_start_v = center - h2_um - e_um // 2
-    y_end_v   = center + h1_um + e_um // 2
-    mask[y_start_v:y_end_v, x_start_v:x_end_v] = 1
+    return mask
 
+def Edge():
+    x0_um = 0  # Posición del borde en micras
+    x = np.linspace(-physical_size_um/2, physical_size_um/2, size)
+    y = np.linspace(-physical_size_um/2, physical_size_um/2, size)
+    X, Y = np.meshgrid(x, y)
+    mask = np.where(X >= x0_um, 1, 0)
     return mask
 
 # Función que grafica solo la máscara
